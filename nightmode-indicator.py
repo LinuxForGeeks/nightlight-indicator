@@ -143,7 +143,8 @@ class NightmodeIndicator():
 		#old_status = self.status
 		self.status = self.get_nightmode_status()
 		# Enable Widget
-		widget.set_sensitive(True)
+		if widget is not None:
+			widget.set_sensitive(True)
 		# Set Indicator Icon
 		self.set_icon()
 		# Change Turn On/Off Menu Item Label & sensitivity
