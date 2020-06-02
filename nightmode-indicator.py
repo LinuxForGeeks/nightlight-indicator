@@ -93,9 +93,10 @@ class NightmodeIndicator():
 		# Assign Menu To Indicator
 		self.indicator.set_menu(self.menu)
 
-	def get_nightmode_status(self):
+	def get_nightmode_status(self, print_status = True):
 		status = self.gsettings.get_boolean(self.nightmode_key)
-		print('Night mode is: %s' % ('On' if status else 'Off'))
+		if print_status:
+			print('Night mode is: %s' % ('On' if status else 'Off'))
 		return status
 
 	def open_file_in_editor(self, widget, filename):
@@ -115,7 +116,7 @@ class NightmodeIndicator():
 
 	def monitor_nightmode(self, loop = True):
 		# Enable Nightmode if disabled
-		if self.keep_nightmode_always_on and self.get_nightmode_status() == NightmodeStatus.Off:
+		if self.keep_nightmode_always_on and self.get_nightmode_status(False) == NightmodeStatus.Off:
 			self.enable_nightmode(True)
 		
 		if not loop or not self.keep_nightmode_always_on:
