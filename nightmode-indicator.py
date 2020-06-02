@@ -10,6 +10,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('AppIndicator3', '0.1')
 from gi.repository import Gtk, GdkPixbuf, GLib, Gio, AppIndicator3 as AppIndicator
 import os, subprocess, webbrowser
+import sys
 
 class NightmodeStatus:
 	On, Off = (True, False)
@@ -25,6 +26,12 @@ class NightmodeIndicator():
 		self.nightmode_key = 'night-light-enabled'
 		self.gsettings = Gio.Settings.new(self.nightmode_schema)
 		self.default_text_editor = 'gedit'
+		self.keep_nightmode_always_on = '--always-on' in sys.argv[1:]
+
+		# Keep Nightmode always on
+		if self.keep_nightmode_always_on:
+			# Monitor Nightmode every 10 seconds
+			GLib.timeout_add_seconds(10, self.monitor_nightmode)
 
 		# Get Nightmode Status
 		self.status = self.get_nightmode_status()
@@ -105,6 +112,16 @@ class NightmodeIndicator():
 
 	def open_display_settings(self, widget):
 		subprocess.Popen(['gnome-control-center', 'display'])
+
+	def monitor_nightmode(self, loop = True):
+		# Enable Nightmode if disabled
+		if self.keep_nightmode_always_on and self.get_nightmode_status() == NightmodeStatus.Off:
+			self.enable_nightmode(True)
+		
+		if not loop or not self.keep_nightmode_always_on:
+			return False # Do not loop
+		else:
+			return True # Loop
 
 	def toggle_nightmode(self, widget):
 		# Disable Widget
