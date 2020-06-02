@@ -26,7 +26,9 @@ class NightlightIndicator():
 		self.nightlight_key = 'night-light-enabled'
 		self.gsettings = Gio.Settings.new(self.nightlight_schema)
 		self.default_text_editor = 'gedit'
-		self.keep_nightlight_always_on = '--always-on' in sys.argv[1:]
+		cmd_line_args = sys.argv[1:]
+		self.keep_nightlight_always_on = '--always-on' in cmd_line_args
+		self.flush_on_start = '--flush-on-start' in cmd_line_args
 
 		# Keep Nightlight always on
 		print('Always on: %s' % ('Enabled' if self.keep_nightlight_always_on else 'Disabled'))
@@ -93,6 +95,10 @@ class NightlightIndicator():
 
 		# Assign Menu To Indicator
 		self.indicator.set_menu(self.menu)
+
+		# Flush on start
+		if self.flush_on_start:
+			self.restart_nightlight(self.restartItem)
 
 	def get_nightlight_status(self, print_status = True):
 		status = self.gsettings.get_boolean(self.nightlight_key)

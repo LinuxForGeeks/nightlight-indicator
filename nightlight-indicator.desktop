@@ -2,7 +2,7 @@
 Version=1.0
 Name=Nightlight Indicator
 Comment=A night light indicator for Gnome based Linux desktops
-Exec=nightlight-indicator --always-on
+Exec=nightlight-indicator --always-on --flush-on-start
 Icon=/usr/share/nightlight-indicator/icons/sun.svg
 Terminal=false
 StartupNotify=true
