@@ -157,7 +157,7 @@ class NightlightIndicator():
 		# Disable Widget
 		widget.set_sensitive(False)
 		# Set Indicator Icon 'Off'
-		self.set_icon('sun-off.svg')
+		self.set_icon('nightlight-off.svg')
 		# Disable night light
 		self.disable_nightlight()
 		# Enable night light after 1 second & update status
@@ -183,9 +183,9 @@ class NightlightIndicator():
 
 	def set_icon(self, icon_name = None):
 		if icon_name is None:
-			icon_name = 'sun-off.svg'
+			icon_name = 'nightlight-off.svg'
 			if self.status == NightlightStatus.On:
-				icon_name = 'sun.svg'
+				icon_name = 'nightlight-on.svg'
 		icon = os.path.dirname(os.path.realpath(__file__)) + '/icons/' + icon_name
 		if os.path.exists(icon):
 			self.indicator.set_icon(icon)
@@ -195,7 +195,7 @@ class NightlightIndicator():
 	def about(self, widget):
 		about_dialog = Gtk.AboutDialog()
 		about_dialog.set_position(Gtk.WindowPosition.CENTER)
-		logo = GdkPixbuf.Pixbuf.new_from_file(os.path.dirname(os.path.realpath(__file__)) + '/icons/sun.svg')
+		logo = GdkPixbuf.Pixbuf.new_from_file(os.path.dirname(os.path.realpath(__file__)) + '/icons/nightlight.svg')
 		about_dialog.set_logo(logo)
 		about_dialog.set_program_name('Nightlight Indicator')
 		about_dialog.set_version('1.0')
