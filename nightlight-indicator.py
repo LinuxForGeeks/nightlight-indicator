@@ -204,7 +204,7 @@ class NightlightIndicator():
 		about_dialog.set_website_label('GitHub')
 		about_dialog.set_copyright('Copyright © 2020 AXeL-dev')
 		about_dialog.set_authors(['AXeL-dev <contact.axel.dev@gmail.com> (Developer)'])
-		about_dialog.set_license('''Xampp Indicator, A night light indicator for Gnome based Linux desktops.
+		about_dialog.set_license('''Nightlight Indicator, A night light indicator for Gnome based Linux desktops.
 Copyright © 2020 AXeL-dev
 
 This program is free software: you can redistribute it and/or modify
