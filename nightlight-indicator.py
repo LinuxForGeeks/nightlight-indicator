@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Nightmode Indicator
+# Nightlight Indicator
 #
 # Copyright (c) 2019 - 2020 AXeL
 
@@ -12,30 +12,30 @@ from gi.repository import Gtk, GdkPixbuf, GLib, Gio, AppIndicator3 as AppIndicat
 import os, subprocess, webbrowser
 import sys
 
-class NightmodeStatus:
+class NightlightStatus:
 	On, Off = (True, False)
 
-class NightmodeIndicator():
+class NightlightIndicator():
 	def __init__(self):
 		# Setup Indicator Applet
-		self.indicator = AppIndicator.Indicator.new('nightmode-indicator', 'nightmode', AppIndicator.IndicatorCategory.APPLICATION_STATUS)
+		self.indicator = AppIndicator.Indicator.new('nightlight-indicator', 'nightlight', AppIndicator.IndicatorCategory.APPLICATION_STATUS)
 		self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
 
 		# Set Attributes
-		self.nightmode_schema = 'org.gnome.settings-daemon.plugins.color'
-		self.nightmode_key = 'night-light-enabled'
-		self.gsettings = Gio.Settings.new(self.nightmode_schema)
+		self.nightlight_schema = 'org.gnome.settings-daemon.plugins.color'
+		self.nightlight_key = 'night-light-enabled'
+		self.gsettings = Gio.Settings.new(self.nightlight_schema)
 		self.default_text_editor = 'gedit'
-		self.keep_nightmode_always_on = '--always-on' in sys.argv[1:]
+		self.keep_nightlight_always_on = '--always-on' in sys.argv[1:]
 
-		# Keep Nightmode always on
-		print('Always on: %s' % ('Enabled' if self.keep_nightmode_always_on else 'Disabled'))
-		if self.keep_nightmode_always_on:
-			# Monitor Nightmode every 10 seconds
-			GLib.timeout_add_seconds(10, self.monitor_nightmode)
+		# Keep Nightlight always on
+		print('Always on: %s' % ('Enabled' if self.keep_nightlight_always_on else 'Disabled'))
+		if self.keep_nightlight_always_on:
+			# Monitor Nightlight every 10 seconds
+			GLib.timeout_add_seconds(10, self.monitor_nightlight)
 
-		# Get Nightmode Status
-		self.status = self.get_nightmode_status()
+		# Get Nightlight Status
+		self.status = self.get_nightlight_status()
 
 		# Set Indicator Icon
 		self.set_icon()
@@ -44,20 +44,20 @@ class NightmodeIndicator():
 		self.menu = Gtk.Menu()
 
 		# Menu Item: Turn On / Off
-		if self.status == NightmodeStatus.On:
+		if self.status == NightlightStatus.On:
 			label = 'Turn off'
 			#restart_sensitivity = True
 		else:
 			label = 'Turn on'
 			#restart_sensitivity = False
 		self.turnOnOffItem = Gtk.MenuItem(label)
-		self.turnOnOffItem.connect('activate', self.toggle_nightmode)
+		self.turnOnOffItem.connect('activate', self.toggle_nightlight)
 		self.menu.append(self.turnOnOffItem)
 
 		# Menu Item: Restart
 		self.restartItem = Gtk.MenuItem('Restart')
 		#self.restartItem.set_sensitive(restart_sensitivity)
-		self.restartItem.connect('activate', self.restart_nightmode)
+		self.restartItem.connect('activate', self.restart_nightlight)
 		self.menu.append(self.restartItem)
 		self.menu.append(Gtk.SeparatorMenuItem())
 
@@ -94,10 +94,10 @@ class NightmodeIndicator():
 		# Assign Menu To Indicator
 		self.indicator.set_menu(self.menu)
 
-	def get_nightmode_status(self, print_status = True):
-		status = self.gsettings.get_boolean(self.nightmode_key)
+	def get_nightlight_status(self, print_status = True):
+		status = self.gsettings.get_boolean(self.nightlight_key)
 		if print_status:
-			print('Night mode is: %s' % ('On' if status else 'Off'))
+			print('Night light is: %s' % ('On' if status else 'Off'))
 		return status
 
 	def open_file_in_editor(self, widget, filename):
@@ -115,59 +115,59 @@ class NightmodeIndicator():
 	def open_display_settings(self, widget):
 		subprocess.Popen(['gnome-control-center', 'display'])
 
-	def monitor_nightmode(self, loop = True):
-		# Enable Nightmode if disabled
-		if self.keep_nightmode_always_on and self.get_nightmode_status(False) == NightmodeStatus.Off:
-			self.enable_nightmode(True)
+	def monitor_nightlight(self, loop = True):
+		# Enable Nightlight if disabled
+		if self.keep_nightlight_always_on and self.get_nightlight_status(False) == NightlightStatus.Off:
+			self.enable_nightlight(True)
 		
-		if not loop or not self.keep_nightmode_always_on:
+		if not loop or not self.keep_nightlight_always_on:
 			return False # Do not loop
 		else:
 			return True # Loop
 
-	def toggle_nightmode(self, widget):
+	def toggle_nightlight(self, widget):
 		# Disable Widget
 		widget.set_sensitive(False)
-		# Turn On/Off Nightmode
-		if self.status == NightmodeStatus.On:
-			self.disable_nightmode()
+		# Turn On/Off Nightlight
+		if self.status == NightlightStatus.On:
+			self.disable_nightlight()
 		else:
-			self.enable_nightmode()
+			self.enable_nightlight()
 		# Update Status
 		self.update_status(widget)
 
-	def enable_nightmode(self, update_status = False, widget = None):
-		self.gsettings.set_boolean(self.nightmode_key, True)
+	def enable_nightlight(self, update_status = False, widget = None):
+		self.gsettings.set_boolean(self.nightlight_key, True)
 		if update_status:
 			# Update Status
 			self.update_status(widget)
 
-	def disable_nightmode(self):
-		self.gsettings.set_boolean(self.nightmode_key, False)
+	def disable_nightlight(self):
+		self.gsettings.set_boolean(self.nightlight_key, False)
 
-	def restart_nightmode(self, widget):
+	def restart_nightlight(self, widget):
 		# Disable Turn On/Off Menu Item
 		self.turnOnOffItem.set_sensitive(False)
 		# Disable Widget
 		widget.set_sensitive(False)
 		# Set Indicator Icon 'Off'
 		self.set_icon('sun-off.svg')
-		# Disable night mode
-		self.disable_nightmode()
-		# Enable night mode after 1 second & update status
-		GLib.timeout_add_seconds(1, self.enable_nightmode, True, widget)
+		# Disable night light
+		self.disable_nightlight()
+		# Enable night light after 1 second & update status
+		GLib.timeout_add_seconds(1, self.enable_nightlight, True, widget)
 
 	def update_status(self, widget):
-		# Update Nightmode Status
+		# Update Nightlight Status
 		#old_status = self.status
-		self.status = self.get_nightmode_status()
+		self.status = self.get_nightlight_status()
 		# Enable Widget
 		if widget is not None:
 			widget.set_sensitive(True)
 		# Set Indicator Icon
 		self.set_icon()
 		# Change Turn On/Off Menu Item Label & sensitivity
-		if self.status == NightmodeStatus.On:
+		if self.status == NightlightStatus.On:
 			self.turnOnOffItem.set_label('Turn off')
 			#self.restartItem.set_sensitive(True)
 		else:
@@ -178,7 +178,7 @@ class NightmodeIndicator():
 	def set_icon(self, icon_name = None):
 		if icon_name is None:
 			icon_name = 'sun-off.svg'
-			if self.status == NightmodeStatus.On:
+			if self.status == NightlightStatus.On:
 				icon_name = 'sun.svg'
 		icon = os.path.dirname(os.path.realpath(__file__)) + '/icons/' + icon_name
 		if os.path.exists(icon):
@@ -191,14 +191,14 @@ class NightmodeIndicator():
 		about_dialog.set_position(Gtk.WindowPosition.CENTER)
 		logo = GdkPixbuf.Pixbuf.new_from_file(os.path.dirname(os.path.realpath(__file__)) + '/icons/sun.svg')
 		about_dialog.set_logo(logo)
-		about_dialog.set_program_name('Nightmode Indicator')
+		about_dialog.set_program_name('Nightlight Indicator')
 		about_dialog.set_version('1.0')
-		about_dialog.set_comments('A night mode indicator for Gnome based Linux desktops')
-		about_dialog.set_website('https://github.com/AXeL-dev/nightmode-indicator')
+		about_dialog.set_comments('A night light indicator for Gnome based Linux desktops')
+		about_dialog.set_website('https://github.com/AXeL-dev/nightlight-indicator')
 		about_dialog.set_website_label('GitHub')
 		about_dialog.set_copyright('Copyright © 2020 AXeL-dev')
 		about_dialog.set_authors(['AXeL-dev <contact.axel.dev@gmail.com> (Developer)'])
-		about_dialog.set_license('''Xampp Indicator, A night mode indicator for Gnome based Linux desktops.
+		about_dialog.set_license('''Xampp Indicator, A night light indicator for Gnome based Linux desktops.
 Copyright © 2020 AXeL-dev
 
 This program is free software: you can redistribute it and/or modify
@@ -223,5 +223,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.''')
 		Gtk.main()
 
 if __name__ == '__main__':
-	indicator = NightmodeIndicator()
+	indicator = NightlightIndicator()
 	indicator.main()

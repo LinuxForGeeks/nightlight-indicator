@@ -7,17 +7,17 @@ fi
 
 sh uninstall.sh
 
-mkdir /usr/share/nightmode-indicator
-cp -R icons /usr/share/nightmode-indicator/
+mkdir /usr/share/nightlight-indicator
+cp -R icons /usr/share/nightlight-indicator/
 
-cp *.py /usr/share/nightmode-indicator/
-chmod 755 -R /usr/share/nightmode-indicator/
+cp *.py /usr/share/nightlight-indicator/
+chmod 755 -R /usr/share/nightlight-indicator/
 
-cp nightmode-indicator.desktop /etc/xdg/autostart/
-chmod 755 /etc/xdg/autostart/nightmode-indicator.desktop
+cp nightlight-indicator.desktop /etc/xdg/autostart/
+chmod 755 /etc/xdg/autostart/nightlight-indicator.desktop
 
-cp nightmode-indicator.desktop /usr/share/applications/
-chmod 755 /usr/share/applications/nightmode-indicator.desktop
+cp nightlight-indicator.desktop /usr/share/applications/
+chmod 755 /usr/share/applications/nightlight-indicator.desktop
 
-ln -s /usr/share/nightmode-indicator/nightmode-indicator.py /usr/local/bin/nightmode-indicator
-chmod 755 /usr/local/bin/nightmode-indicator
+ln -s /usr/share/nightlight-indicator/nightlight-indicator.py /usr/local/bin/nightlight-indicator
+chmod 755 /usr/local/bin/nightlight-indicator
