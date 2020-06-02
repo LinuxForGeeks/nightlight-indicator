@@ -29,6 +29,7 @@ class NightmodeIndicator():
 		self.keep_nightmode_always_on = '--always-on' in sys.argv[1:]
 
 		# Keep Nightmode always on
+		print('Always on: %s' % ('Enabled' if self.keep_nightmode_always_on else 'Disabled'))
 		if self.keep_nightmode_always_on:
 			# Monitor Nightmode every 10 seconds
 			GLib.timeout_add_seconds(10, self.monitor_nightmode)
