@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Nightmode Indicator
+Comment=A night mode indicator for Gnome based Linux desktops
+Exec=nightmode-indicator
+Icon=/usr/share/nightmode-indicator/icons/sun.svg
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=GNOME;GTK;Utility;
