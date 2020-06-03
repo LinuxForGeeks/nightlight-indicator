@@ -11,6 +11,8 @@ gi.require_version('AppIndicator3', '0.1')
 from gi.repository import Gtk, GdkPixbuf, GLib, Gio, AppIndicator3 as AppIndicator
 import os, subprocess, webbrowser
 import sys
+import dbus  
+from dbus.mainloop.glib import DBusGMainLoop
 
 class NightlightStatus:
 	On, Off = (True, False)
@@ -28,11 +30,15 @@ class NightlightIndicator():
 		self.default_text_editor = 'gedit'
 		cmd_line_args = sys.argv[1:]
 		self.keep_nightlight_always_on = '--always-on' in cmd_line_args
-		self.flush_on_start = '--flush-on-start' in cmd_line_args
+		self.enforce_on_start = '--enforce-on-start' in cmd_line_args
+		self.enforce_on_unlock = '--enforce-on-unlock' in cmd_line_args
 
 		# Print Command Line Arguments Status
+		print('---------------------------')
 		print('Always on: %s' % ('Enabled' if self.keep_nightlight_always_on else 'Disabled'))
-		print('Flush on start: %s' % ('Enabled' if self.flush_on_start else 'Disabled'))
+		print('Enforce on start: %s' % ('Enabled' if self.enforce_on_start else 'Disabled'))
+		print('Enforce on unlock: %s' % ('Enabled' if self.enforce_on_unlock else 'Disabled'))
+		print('---------------------------')
 
 		# Get Nightlight Status
 		self.status = self.get_nightlight_status()
@@ -97,9 +103,15 @@ class NightlightIndicator():
 		# Monitor Nightlight every 5 seconds
 		GLib.timeout_add_seconds(5, self.monitor_nightlight)
 
-		# Flush on start
-		if self.flush_on_start:
-			self.restart_nightlight(self.restartItem)
+		# Monitor screen lock/unlock
+		DBusGMainLoop(set_as_default=True)
+		bus = dbus.SessionBus()
+		bus.add_match_string("type='signal',interface='org.gnome.ScreenSaver'")
+		bus.add_message_filter(self.on_screen_lock_unlock)
+
+		# Enforce on start
+		if self.enforce_on_start:
+			self.enforce_nightlight()
 
 	def get_nightlight_status(self, print_status = True):
 		status = self.gsettings.get_boolean(self.nightlight_key)
@@ -126,7 +138,7 @@ class NightlightIndicator():
 		# Get status
 		old_status = self.status
 		self.status = self.get_nightlight_status(False)
-		# Enable Nightlight if disabled (+ keep always on is true)
+		# Enable Nightlight if disabled & keep always on is true
 		if self.keep_nightlight_always_on and self.status == NightlightStatus.Off:
 			self.enable_nightlight()
 		# Update Status
@@ -137,6 +149,20 @@ class NightlightIndicator():
 			return False # Do not loop
 		else:
 			return True # Loop
+
+	def on_screen_lock_unlock(self, bus, message):
+		if message.get_member() != 'ActiveChanged':
+			return
+		args = message.get_args_list()
+		if args[0] == True:
+			print('Screen Locked')
+		else:
+			print('Screen Unlocked')
+			if self.enforce_on_unlock:
+				self.enforce_nightlight()
+
+	def enforce_nightlight(self):
+		self.restart_nightlight(self.restartItem)
 
 	def toggle_nightlight(self, widget):
 		# Disable Widget

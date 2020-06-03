@@ -2,7 +2,7 @@
 Version=1.0
 Name=Nightlight Indicator
 Comment=A night light indicator for Gnome based Linux desktops
-Exec=nightlight-indicator --always-on --flush-on-start
+Exec=nightlight-indicator --enforce-on-start --enforce-on-unlock
 Icon=/usr/share/nightlight-indicator/icons/nightlight.svg
 Terminal=false
 StartupNotify=true
