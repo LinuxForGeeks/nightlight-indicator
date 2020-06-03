@@ -30,11 +30,9 @@ class NightlightIndicator():
 		self.keep_nightlight_always_on = '--always-on' in cmd_line_args
 		self.flush_on_start = '--flush-on-start' in cmd_line_args
 
-		# Keep Nightlight always on
+		# Print Command Line Arguments Status
 		print('Always on: %s' % ('Enabled' if self.keep_nightlight_always_on else 'Disabled'))
-		if self.keep_nightlight_always_on:
-			# Monitor Nightlight every 10 seconds
-			GLib.timeout_add_seconds(10, self.monitor_nightlight)
+		print('Flush on start: %s' % ('Enabled' if self.flush_on_start else 'Disabled'))
 
 		# Get Nightlight Status
 		self.status = self.get_nightlight_status()
@@ -100,6 +98,9 @@ class NightlightIndicator():
 		if self.flush_on_start:
 			self.restart_nightlight(self.restartItem)
 
+		# Monitor Nightlight every 5 seconds (starts after the 1st 5 sec)
+		GLib.timeout_add_seconds(5, self.monitor_nightlight)
+
 	def get_nightlight_status(self, print_status = True):
 		status = self.gsettings.get_boolean(self.nightlight_key)
 		if print_status:
@@ -122,11 +123,17 @@ class NightlightIndicator():
 		subprocess.Popen(['gnome-control-center', 'display'])
 
 	def monitor_nightlight(self, loop = True):
-		# Enable Nightlight if disabled
-		if self.keep_nightlight_always_on and self.get_nightlight_status(False) == NightlightStatus.Off:
-			self.enable_nightlight(True)
-		
-		if not loop or not self.keep_nightlight_always_on:
+		# Get status
+		old_status = self.status
+		self.status = self.get_nightlight_status(False)
+		# Enable Nightlight if disabled (+ keep always on is true)
+		if self.keep_nightlight_always_on and self.status == NightlightStatus.Off:
+			self.enable_nightlight()
+		# Update Status
+		if self.status != old_status:
+			self.update_status()
+		# Continue?
+		if not loop:
 			return False # Do not loop
 		else:
 			return True # Loop
@@ -163,7 +170,7 @@ class NightlightIndicator():
 		# Enable night light after 1 second & update status
 		GLib.timeout_add_seconds(1, self.enable_nightlight, True, widget)
 
-	def update_status(self, widget):
+	def update_status(self, widget = None):
 		# Update Nightlight Status
 		#old_status = self.status
 		self.status = self.get_nightlight_status()
