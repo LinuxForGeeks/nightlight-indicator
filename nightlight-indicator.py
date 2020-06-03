@@ -94,12 +94,12 @@ class NightlightIndicator():
 		# Assign Menu To Indicator
 		self.indicator.set_menu(self.menu)
 
+		# Monitor Nightlight every 5 seconds
+		GLib.timeout_add_seconds(5, self.monitor_nightlight)
+
 		# Flush on start
 		if self.flush_on_start:
 			self.restart_nightlight(self.restartItem)
-
-		# Monitor Nightlight every 5 seconds (starts after the 1st 5 sec)
-		GLib.timeout_add_seconds(5, self.monitor_nightlight)
 
 	def get_nightlight_status(self, print_status = True):
 		status = self.gsettings.get_boolean(self.nightlight_key)
