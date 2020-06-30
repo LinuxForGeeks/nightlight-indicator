@@ -30,14 +30,17 @@ class NightlightIndicator():
 		self.default_text_editor = 'gedit'
 		cmd_line_args = sys.argv[1:]
 		self.keep_nightlight_always_on = '--always-on' in cmd_line_args
-		self.enforce_on_start = '--enforce-on-start' in cmd_line_args
-		self.enforce_on_unlock = '--enforce-on-unlock' in cmd_line_args
+		self.restart_on_startup = '--restart-on-startup' in cmd_line_args
+		self.restart_on_unlock = '--restart-on-unlock' in cmd_line_args
+		self.restart_on_monitor_flicker = '--restart-on-monitor-flicker' in cmd_line_args
+		self.isMonitorGoingOff = False
 
 		# Print Command Line Arguments Status
 		print('---------------------------')
 		print('Always on: %s' % ('Enabled' if self.keep_nightlight_always_on else 'Disabled'))
-		print('Enforce on start: %s' % ('Enabled' if self.enforce_on_start else 'Disabled'))
-		print('Enforce on unlock: %s' % ('Enabled' if self.enforce_on_unlock else 'Disabled'))
+		print('Restart on startup: %s' % ('Enabled' if self.restart_on_startup else 'Disabled'))
+		print('Restart on unlock: %s' % ('Enabled' if self.restart_on_unlock else 'Disabled'))
+		print('Restart on monitor flicker: %s' % ('Enabled' if self.restart_on_monitor_flicker else 'Disabled'))
 		print('---------------------------')
 
 		# Get Nightlight Status
@@ -100,18 +103,19 @@ class NightlightIndicator():
 		# Assign Menu To Indicator
 		self.indicator.set_menu(self.menu)
 
-		# Monitor Nightlight every 5 seconds
-		GLib.timeout_add_seconds(5, self.monitor_nightlight)
+		# Watch Nightlight every 5 seconds
+		GLib.timeout_add_seconds(5, self.watch_nightlight)
 
-		# Monitor screen lock/unlock
+		# Watch dbus messages
 		DBusGMainLoop(set_as_default=True)
 		bus = dbus.SessionBus()
 		bus.add_match_string("type='signal',interface='org.gnome.ScreenSaver'")
-		bus.add_message_filter(self.on_screen_lock_unlock)
+		bus.add_match_string_non_blocking("interface='org.gnome.Mutter.IdleMonitor',eavesdrop='true'")
+		bus.add_message_filter(self.on_dbus_message)
 
-		# Enforce on start
-		if self.enforce_on_start:
-			self.enforce_nightlight()
+		# Restart on startup
+		if self.restart_on_startup:
+			self.restart_nightlight(self.restartItem)
 
 	def get_nightlight_status(self, print_status = True):
 		status = self.gsettings.get_boolean(self.nightlight_key)
@@ -134,7 +138,7 @@ class NightlightIndicator():
 	def open_display_settings(self, widget):
 		subprocess.Popen(['gnome-control-center', 'display'])
 
-	def monitor_nightlight(self, loop = True):
+	def watch_nightlight(self, loop = True):
 		# Get status
 		old_status = self.status
 		self.status = self.get_nightlight_status(False)
@@ -150,19 +154,30 @@ class NightlightIndicator():
 		else:
 			return True # Loop
 
-	def on_screen_lock_unlock(self, bus, message):
-		if message.get_member() != 'ActiveChanged':
+	def on_dbus_message(self, bus, message):
+		member = message.get_member()
+		# Screen lock/unlock
+		if member == 'ActiveChanged':
+			args = message.get_args_list()
+			if args[0] == True:
+				print('Screen Locked')
+			else:
+				print('Screen Unlocked')
+				if self.restart_on_unlock:
+					self.restart_nightlight(self.restartItem)
+		# Monitor state change
+		elif member == 'AddUserActiveWatch':
+			self.isMonitorGoingOff = True
+			print('Monitor off')
 			return
-		args = message.get_args_list()
-		if args[0] == True:
-			print('Screen Locked')
-		else:
-			print('Screen Unlocked')
-			if self.enforce_on_unlock:
-				self.enforce_nightlight()
-
-	def enforce_nightlight(self):
-		self.restart_nightlight(self.restartItem)
+		elif member == 'RemoveWatch':
+			print('Monitor on')
+		elif member == 'WatchFired' and self.isMonitorGoingOff:
+			print('Monitor flickers')
+			if self.restart_on_monitor_flicker:
+				self.restart_nightlight(self.restartItem)
+		# Reset isMonitorGoingOff value
+		self.isMonitorGoingOff = False
 
 	def toggle_nightlight(self, widget):
 		# Disable Widget
