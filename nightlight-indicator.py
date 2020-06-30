@@ -115,7 +115,7 @@ class NightlightIndicator():
 
 		# Restart on startup
 		if self.restart_on_startup:
-			self.restart_nightlight(self.restartItem)
+			self.restart_nightlight()
 
 	def get_nightlight_status(self, print_status = True):
 		status = self.gsettings.get_boolean(self.nightlight_key)
@@ -164,7 +164,7 @@ class NightlightIndicator():
 			else:
 				print('Screen Unlocked')
 				if self.restart_on_unlock:
-					self.restart_nightlight(self.restartItem)
+					self.restart_nightlight()
 		# Monitor state change
 		elif member == 'AddUserActiveWatch':
 			self.isMonitorGoingOff = True
@@ -175,7 +175,7 @@ class NightlightIndicator():
 		elif member == 'WatchFired' and self.isMonitorGoingOff:
 			print('Monitor flickers')
 			if self.restart_on_monitor_flicker:
-				self.restart_nightlight(self.restartItem)
+				self.restart_nightlight()
 		# Reset isMonitorGoingOff value
 		self.isMonitorGoingOff = False
 
@@ -199,17 +199,16 @@ class NightlightIndicator():
 	def disable_nightlight(self):
 		self.gsettings.set_boolean(self.nightlight_key, False)
 
-	def restart_nightlight(self, widget):
-		# Disable Turn On/Off Menu Item
+	def restart_nightlight(self, widget = None):
+		# Disable Turn On/Off & Restart Menu Items
 		self.turnOnOffItem.set_sensitive(False)
-		# Disable Widget
-		widget.set_sensitive(False)
+		self.restartItem.set_sensitive(False)
 		# Set Indicator Icon 'Off'
 		self.set_icon('nightlight-off.svg')
 		# Disable night light
 		self.disable_nightlight()
 		# Enable night light after 1 second & update status
-		GLib.timeout_add_seconds(1, self.enable_nightlight, True, widget)
+		GLib.timeout_add_seconds(1, self.enable_nightlight, True, self.restartItem)
 
 	def update_status(self, widget = None):
 		# Update Nightlight Status
