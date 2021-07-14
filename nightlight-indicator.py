@@ -74,23 +74,17 @@ class NightlightIndicator():
 		displaySettinsItem = Gtk.MenuItem('Display settings')
 		displaySettinsItem.connect('activate', self.open_display_settings)
 		self.menu.append(displaySettinsItem)
-		self.menu.append(Gtk.SeparatorMenuItem())
 
-		# Menu Item: Indicator
-		indicatorMenu = Gtk.Menu()
-		indicatorItem = Gtk.MenuItem('Indicator')
-		indicatorItem.set_submenu(indicatorMenu)
-		self.menu.append(indicatorItem)
-
-		# SubMenu Item: Refresh
+		# Menu Item: Refresh
 		refreshItem = Gtk.MenuItem('Refresh')
 		refreshItem.connect('activate', self.update_status)
-		indicatorMenu.append(refreshItem)
+		self.menu.append(refreshItem)
+		self.menu.append(Gtk.SeparatorMenuItem())
 
-		# SubMenu Item: About
+		# Menu Item: About
 		aboutItem = Gtk.MenuItem('About')
 		aboutItem.connect('activate', self.about)
-		indicatorMenu.append(aboutItem)
+		self.menu.append(aboutItem)
 
 		# Menu Item: Quit
 		exitItem = Gtk.MenuItem('Quit\t\t\t\t\t') # tabulations used to get some space
