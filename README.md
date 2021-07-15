@@ -18,7 +18,7 @@ To install all the dependencies on debian or derivates, run:
 sudo apt install python3 python3-gi gir1.2-gtk-3.0 gir1.2-appindicator3-0.1
 ```
 
-Next, open a terminal in the xampp-indicator folder & run install script:
+Next, open a terminal in the nightlight-indicator folder & run install script:
 ```bash
 sudo ./install.sh
 ```
